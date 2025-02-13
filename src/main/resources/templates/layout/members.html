@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="members">                   
+    <div th:if="${loggedMember.authority == '중간 관리자' || loggedMember.authority == '관리자'}">
+    <div class="container">
+        <div >
+            <h3 class="text-center page-title mt-4">사용자 목록</h3>
+            
+            <div class="search-container">
+
+                <form id="searchForm" class="row g-3">
+                    <div class="col-md-2">
+                        <select class="form-select" id="searchType" name="searchType">
+                            <option value="ID">아이디</option>
+                            <option value="NAME">이름</option>
+                            <option value="TEL">전화번호</option>
+                            <option value="CREATEDAT">가입일자</option>
+                            <option value="AUTHORITY">사용자 등급</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div id="textSearch">
+                            <input type="text" class="form-control" id="textSearchValue" 
+                                   name="searchValue" placeholder="검색어를 입력하세요">
+                        </div>
+                        
+                        <div id="dateSearch" style="display: none;">
+                            <div class="input-group">
+                                <input type="date" class="form-control" id="startDate" name="startDate">
+                                <span class="input-group-text">~</span>
+                                <input type="date" class="form-control" id="endDate" name="endDate">
+                            </div>
+                        </div>
+                        
+                        <div id="authoritySearch" style="display: none;">
+                            <select class="form-select" id="authoritySearchValue" name="authoritySearchValue">
+                                <option value="admin">관리자</option>
+                                <option value="middle-admin">중간 관리자</option>
+                                <option value="user">일반 사용자</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> 검색
+                        </button>
+                    </div>
+                </form>
+                
+                
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-3">
+                        <div class="total-count text-black" >
+                            총 <span class="fw-bold"></span> 건
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-9 text-end">
+                        <button type="button" class="btn btn-primary" onclick="joinModal()">
+                            <i class="bi bi-person-plus"></i> 등록
+                        </button>
+                        <button type="button" class="btn btn-danger" id="deleteBtn" th:if="${loggedMember.authority == '관리자'}">
+                            <i class="bi bi-trash"></i> 삭제
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- 회원 목록 테이블 -->
+        <table class="table mt-4">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="checkAll" /></th>
+                    <th>프로필</th>
+                    <th>순번</th>
+                    <th>아이디</th>
+                    <th>이름</th>
+                    <th>전화번호</th>
+                    <th>주소</th>
+                    <th>가입일자</th>
+                    <th>사용자 등급</th>
+                    <th>잠김 여부</th>
+                </tr>
+            </thead>
+            <tbody id="memberTableBody">
+                <!-- 데이터가 들어갈 곳 -->
+            </tbody>
+        </table>
+
+        <!-- 페이지네이션 -->
+		    <nav aria-label="Page navigation">
+		        <ul class="pagination justify-content-center"></ul>
+		    </nav>
+		</div>
+	<script>
+$(document).ready(function() {
+        
+		// memberList : 검색 필드 변경
+	    $('#searchType').on('change', function() {
+	        if ($(this).val() !== 'CREATEDAT' && $(this).val() !== 'AUTHORITY') {
+	        	$('#textSearchValue').val('');
+	        }
+
+	     // 가입일자 초기화 (오늘 날짜로)
+				if (searchType !== 'CREATEDAT') {
+				    const now = new Date();
+				    const utc = now.getTime() + (now.getTimezoneOffset() * 60 * 1000); // UTC 시간
+				    const koreaTimeDiff = 9 * 60 * 60 * 1000; // 한국 표준시 오프셋 (9시간)
+				    const korNow = new Date(utc + koreaTimeDiff); // 한국 시간
+				
+				    // YYYY-MM-DD 형식으로 변환
+				    const year = korNow.getFullYear();
+				    const month = String(korNow.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+				    const day = String(korNow.getDate()).padStart(2, '0');
+				
+				    const formattedToday = `${year}-${month}-${day}`;
+				    console.log(formattedToday); // 'YYYY-MM-DD' 형식으로 출력
+				    $('#startDate').val(formattedToday);
+				    $('#endDate').val(formattedToday);
+				}
+
+	        
+	        // 사용자 권한 초기화 (관리자로)
+	        if (searchType !== 'AUTHORITY') {
+	            $('#authoritySearchValue').val('admin'); 
+	        }
+	        
+	        // 모든 검색 필드 숨기기
+	        $('#textSearch').hide();
+	        $('#dateSearch').hide();
+	        $('#authoritySearch').hide();
+
+	        // 선택된 타입에 따라 검색 필드 표시
+	        switch ($(this).val()) {
+	            case 'CREATEDAT':
+	            	$('#dateSearch').show();
+	                break;
+	            case 'AUTHORITY':
+	            	$('#authoritySearch').show();
+	                break;
+	            default:
+	            	$('#textSearch').show();
+	        }
+	    });
+	
+	
+	    // 검색 조건을 관리하는 객체
+	    let searchParams = {
+	        searchType: '',
+	        searchValue: '',
+	        startDate: '',
+	        endDate: '',
+	        authoritySearchValue: ''
+	    };
+
+	    // 초기 데이터 로드
+	    loadMemberList(searchParams);
+
+	    // 검색 폼 제출 시 Ajax로 회원 목록을 다시 로드
+	    $('#searchForm').on('submit', function(event) {
+	        event.preventDefault();
+	        
+	        if ($('#searchType').val() === 'CREATEDAT') {
+	            const start = new Date($('#startDate').val());
+	            const end = new Date($('#endDate').val());
+
+	            if (start > end) {
+	                event.preventDefault();
+	                alert('시작 날짜는 종료 날짜보다 늦을 수 없습니다.');
+	                return false;
+	            }
+	        }
+	        
+	        searchParams = {
+	            searchType: $('#searchType').val(),
+	            searchValue: $('#textSearchValue').val(),
+	            startDate: $('#startDate').val(),
+	            endDate: $('#endDate').val(),
+	            authoritySearchValue: $('#authoritySearchValue').val()
+	        };
+	        loadMemberList(searchParams);
+	    });
+
+	    // 페이지네이션 링크 클릭 시 Ajax로 회원 목록을 다시 로드
+	    $(document).on('click', '.pagination a', function(event) {
+	        const page = $(this).data('page');
+	        if(page !== undefined) {
+	            searchParams.page = page - 1;
+	            loadMemberList(searchParams);
+	        }
+	    });
+
+	    // Ajax로 회원 목록을 불러오는 함수
+	    function loadMemberList(params) {
+	        $.ajax({
+	            url: '/members/',
+	            type: 'GET',
+	            data: params,
+	            success: function(response) {
+	                if (response.memberList) {
+	                    updateMemberList(response.memberList, response.totalElements, response.currentPage + 1);
+	                    updatePagination(response.totalPages, response.currentPage + 1);
+	                    // 전체 건수 업데이트
+	                    $('.total-count span.fw-bold').text(response.totalElements);
+	                } else {
+	                    console.error("memberList 불러오기 실패");
+	                }
+	            },
+	            error: function() {
+	                console.error("ajax 연결 실패");
+	            }
+	        });
+	    }
+
+	    // 회원 목록을 업데이트하는 함수
+	    function updateMemberList(memberList, totalElements, currentPage) {
+	        let html = '';
+	        if (memberList.length > 0) {
+	            $.each(memberList, function(index, member) {
+	                var displayNumber =  totalElements - ((currentPage - 1) * 10) - index;
+	                html += `<tr>
+						                	<td><input type="checkbox" class="checkMember" 
+					                        data-member-id="${member.id}" 
+					                        ${loggedMember.authority === '중간 관리자' || member.id === loggedMember.id ? 'disabled' : ''}>
+				                      </td>
+	                            <td><img src="${member.profile}" alt="프로필 이미지" width="100" class="profile-image-list"></td>
+	                            <td>${displayNumber}</td>
+	                            <td>${member.id}</td>
+	                            <td>${member.name}</td>
+	                            <td>${member.tel}</td>
+	                            <td>${member.postcode} ${member.address} ${member.detailAddress}</td>
+	                            <td>${member.createdAt}</td>
+	                            <td>${member.authority}</td>
+	                            <td>
+			                            <div class="lock-status" 
+			                                 data-member-id="${member.id}" 
+			                                 data-locked="${member.locked}">
+			                                <div>
+			                                    <input class="form-check-input lock-checkbox" 
+			                                           type="checkbox" 
+			                                           id="checkboxNoLabel-${member.id}" 
+			                                           ${member.locked ? 'checked' : ''}>
+			                                    <label for="checkboxNoLabel-${member.id}"></label>
+			                                </div>
+			                            </div>
+			                        </td>
+	                        </tr>`;
+	            });
+	        } else {
+	            html = '<tr><td colspan="10" class="text-center">검색된 회원이 없습니다.</td></tr>';
+	        }
+	        
+	        $('#memberTableBody').html(html);
+	        
+	        // 행 클릭 시 상세 조회
+	        $("tbody tr").click(function(e) {
+		    		console.log("클릭 됨");
+		    		loadMemberInfo($(this).find("td:nth-child(4)").text()) // 4번째인 id 값
+		    	}); 
+	        
+	        
+	      	//memberList : 잠금 설정
+					$('.lock-status').on('click', function(event) {
+					    event.stopPropagation();
+					    var lockStatus = $(this);
+					    var memberId = lockStatus.data('member-id');
+					    var isLocked = lockStatus.data('locked');
+					    var isMiddleManager = loggedMember.authority === '중간 관리자';
+					
+					 		// 본인 계정인 경우 권한 없음 메시지 표시
+			        if (memberId === loggedMember.id) {
+			            alert('본인 계정은 잠금 설정을 할 수 없습니다.');
+			            return;
+			        }
+		
+					 		// 중간 관리자이고 계정이 잠겨있지 않은 경우 권한 없음 메시지 표시
+					    if ((isMiddleManager && !isLocked)) {
+					        alert('중간 관리자는 계정 잠금 설정 권한이 없습니다.');
+					        return;
+					    }
+					
+					    var confirmMessage = isLocked ? '해당 계정 잠금을 해제하시겠습니까?' : '계정을 잠그시겠습니까?';
+					
+					    if (confirm(confirmMessage)) {
+					        $.ajax({
+					            url: '/members/' + memberId + '/locked',
+					            type: 'PUT',
+					            data: {
+					                locked: !isLocked
+					            },
+					            success: function(response) {
+					                var alertMessage = isLocked ? '잠금이 정상적으로 해제되었습니다.' : '해당 계정이 잠겼습니다.';
+					                alert(alertMessage);
+
+					                // 상태 업데이트
+					                var checkbox = lockStatus.find('.lock-checkbox');
+					                checkbox.prop('checked', !isLocked);
+					                lockStatus.data('locked', !isLocked);
+
+					                // 중간 관리자일 경우 체크박스 비활성화
+					                if (isMiddleManager) {
+					                    checkbox.prop('disabled', !isLocked);
+					                }
+					            },
+					            error: function() {
+					                    alert('오류가 발생했습니다. 다시 시도해 주세요.');
+					                // 오류 발생 시 체크박스 상태를 원래대로 되돌림
+					                var checkbox = lockStatus.find('.lock-checkbox');
+					                checkbox.prop('checked', isLocked);
+					            }
+					        });
+					    }
+					});
+					
+					// 페이지 로드 시 중간 관리자 권한 체크 및 UI 조정
+					$('.lock-status').each(function() {
+		        var lockStatus = $(this);
+		        var memberId = lockStatus.data('member-id');
+		        var isLocked = lockStatus.data('locked');
+		        var checkbox = lockStatus.find('.lock-checkbox');
+		
+		        // 본인 계정인 경우 체크박스 비활성화
+		        if (memberId === loggedMember.id) {
+		            checkbox.prop('disabled', true);
+		        }
+		        // 중간 관리자이고 잠기지 않은 계정인 경우 체크박스 비활성화
+		        else if (loggedMember.authority === '중간 관리자' && !isLocked) {
+		            checkbox.prop('disabled', true);
+		        }
+		    	});
+					
+					// memberList : 삭제 체크 박스
+					// 전체 체크박스 기능
+					$('#checkAll').change(function() {
+					    $('.checkMember:not([disabled])').prop('checked', $(this).is(':checked'));
+					});
+					
+					 if (loggedMember.authority === '중간 관리자') {
+		            $("#checkAll").prop('disabled', true);
+		        }
+					
+					// 개별 체크박스 변경 시 전체 체크박스 상태 업데이트
+					$('.checkMember').on('click', function(event) {
+					    event.stopPropagation();
+					    var allChecked = $('.checkMember:checked').length === $('.checkMember:not([disabled])').length;
+					    $('#checkAll').prop('checked', allChecked);
+					});
+					
+	 }
+	    
+	    // 페이지네이션을 업데이트하는 함수
+		    function updatePagination(totalPages, currentPage) {
+		        let paginationHtml = '';
+		        
+		        if (totalPages > 1) {
+		            // 한 그룹에 보여줄 페이지 수
+		            const pagePerGroup = 10;
+		            
+		            // 현재 페이지가 속한 그룹 계산
+		            const currentGroup = Math.ceil(currentPage / pagePerGroup);
+		            
+		            // 현재 그룹의 시작 페이지와 마지막 페이지 계산
+		            const startPage = (currentGroup - 1) * pagePerGroup + 1; //1단위로 끊기(11,21,31)
+		            const endPage = Math.min(currentGroup * pagePerGroup, totalPages);
+		            
+		            // << (첫번째 페이지) : 현제 페이지가 1이면 보이지 않음
+		            paginationHtml += `
+		            	<li class="page-item" style="${currentPage === 1 ? 'display: none;' : ''}">
+		                    <a class="page-link" href="#" data-page="1">‹‹</a>
+		                </li>
+		            `;
+
+		            // < (이전 그룹으로) : 현제 그룹이 1이면 보이지 않음
+		            paginationHtml += `
+		                <li class="page-item" style= "${currentGroup === 1 ? 'display: none;' : ''}">
+		                    <a class="page-link" href="#" data-page="${Math.max(startPage - pagePerGroup, 1)}">‹</a>
+		                </li>
+		            `;
+		            
+		            
+		            // 페이지 번호
+		            for (let i = startPage; i <= endPage; i++) {
+		                paginationHtml += `
+		                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+		                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+		                    </li>
+		                `;
+		            }
+		            
+		            // > (다음 그룹으로) : 그룹의 마지막 페이지와 페이지 총 수가 같다면 보이지 않음
+		            paginationHtml += `
+		                <li class="page-item" style= "${endPage === totalPages ? 'display: none;' : ''}">
+		                    <a class="page-link" href="#" data-page="${Math.min(endPage + 1, totalPages)}">›</a>
+		                </li>
+		            `;
+		            
+		            // >> (마지막 페이지) : 그룹의 마지막 페이지가 총 페이지보다 크다면 보이지 않음
+		            paginationHtml += `
+		                <li class="page-item" style="${currentPage == totalPages ? 'display: none;' : ''}">
+		                    <a class="page-link" href="#" data-page="${totalPages}">››</a>
+		                </li>
+		            `;
+		            
+		        }
+		        
+		        $('.pagination').html(paginationHtml);
+	
+		        // 페이지 링크 클릭 이벤트 처리
+		        $('.page-link').on('click', function(e) {
+		            e.preventDefault(); // 기본 동작 방지
+		            
+		            const selectedPage = $(this).data('page');
+		            // 클릭한 링크의 부모 요소에 disabled 클래스가 없을 경우에만
+		            if (selectedPage && !$(this).parent().hasClass('disabled')) {
+		                // 스크롤을 맨 위로 이동
+		                window.scrollTo({
+		                    top: 0,
+		                });
+		            }
+		        });
+		    }
+	});
+	
+  </script>
+	<script>
+
+	// 삭제 버튼 클릭 이벤트
+	$('#deleteBtn').click(function(e) {
+	    deleteMember();
+	});
+	
+	// 삭제 기능
+	function deleteMember() {
+	    // 비활성화된 체크박스는 제외하고 선택된 회원만 가져옴
+	    var selectedMembers = $('.checkMember:checked:not([disabled])').map(function() {
+	        return $(this).data('memberId');
+	    }).get(); // 배열로 변환
+	
+	    if (selectedMembers.length === 0) {
+	        alert('삭제할 회원을 선택해주세요.');
+	        return;
+	    }
+	
+	    console.log('선택된 회원 ID:', selectedMembers);
+	
+	    if (confirm(selectedMembers.length + '명의 회원을 삭제하시겠습니까?')) {
+	        $.ajax({
+	            url: '/members/delete',
+	            type: 'DELETE',
+	            contentType: 'application/json',
+	            data: JSON.stringify({ memberIds: selectedMembers }), //배열
+	            success: function(response) {
+	                if (response === "회원이 성공적으로 삭제되었습니다.") {
+	                    alert('선택한 회원이 삭제되었습니다.');
+	                    location.reload(); // 페이지 새로고침
+	                } else {
+	                    alert('회원 삭제에 실패했습니다.');
+	                }
+	            },
+	            error: function() {
+	                alert('오류가 발생했습니다.');
+	            }
+	        });
+	    }
+	}
+	</script>
+
+	
+	<script>
+		// 파일 미리보기
+		$(document).ready( function() {
+				// 등록, 수정 모두 사용
+				const profileContainer = $('.profile-container');
+				const profileImage = $('#img');
+				const profileOverlay = $('.profile-overlay');
+			
+				// 프로필 이미지 클릭 이벤트
+				profileImage.click(function() {
+					profileOverlay.toggle();
+				});
+				
+			 // 프로필 클릭 시 버튼 보이기
+		    $(".profile-container").on("click", function(event) {
+		        event.stopPropagation();
+		        $(".profile-buttons").toggleClass("show");
+		    });
+	
+		    // 배경 클릭 시 닫기
+		    $(document).on("click", function() {
+		        $(".profile-buttons").removeClass("show");
+		    });
+
+		    // 프로필 업로드 또는 제거 버튼 클릭 시 닫기
+		    $(".profile-buttons button").on("click", function(event) {
+		        event.stopPropagation(); // 이벤트 전파 방지
+		        $(".profile-buttons").removeClass("show");
+		    });
+
+				// 입력 필드 유효성 검사
+				 $('#id').on('input',function() {
+					 isIdChecked = false;
+						this.value = this.value.replace(/[^a-zA-Z0-9]/g,'');
+				});
+	
+				$('#password').on('input',function() {
+					this.value = this.value.replace(/[^a-zA-Z0-9!@#$%^&*()]/g,'');
+				});
+	
+				$('#name, #modal-name').on('compositionstart', function() {
+					$(this).data('inputting', true);
+				})// 입력 중인 상태
+				.on('compositionend',function() {
+							$(this).data('inputting',false);
+							this.value = this.value.replace(/[^가-힣]/g, '');
+						}) // 입력 끝
+				.on('input',function() {
+							if (!$(this).data('inputting')) {
+								this.value = this.value.replace(/[^가-힣]/g,'');
+							}
+						}); //입력할 떄 마다
+
+					function pwCheck() {
+						var password = $('#password').val();
+						var passwordCheck = $('#passwordCheck').val();
+						if (password === '' && passwordCheck === '') {
+					        $('#pwConfirm').text(''); // 입력 필드가 모두 비어 있을 때 메시지 삭제
+					    } else if (password === passwordCheck) {
+					        $('#pwConfirm').text('비밀번호가 일치합니다.').css('color', 'green');
+					    } else {
+					        $('#pwConfirm').text('비밀번호가 일치하지 않습니다.').css('color', 'red');
+					    }
+					}
+		
+					$('#password, #passwordCheck').on('input', pwCheck); 
+					
+					
+					// 전화번호 : 자동 하이픈 생성 및 길이 제한
+					$('#tel, #modal-tel').on('keydown', function(event) {
+					    var key = event.charCode || event.keyCode || 0;
+					    var $text = $(this);
+
+					    // 전화번호 길이 제한: 13자 (xxx-xxxx-xxxx)
+					    if ($text.val().length >= 13 && key !== 8 && key !== 9) {
+					        event.preventDefault(); // 더 이상 입력하지 못하게
+					        return;
+					    }
+
+					    // 숫자 키(0-9), 백스페이스(8), 탭(9), Delete(46)만 허용
+					    if (!(key == 8 || key == 9 || key == 46 || (key >= 48 && key <= 57) || (key >= 96 && key <= 105))) {
+					        event.preventDefault(); // 다른 모든 키 입력 방지
+					    }
+					});
+
+					// 입력 이벤트에서 한국어 차단 및 자동 하이픈 추가
+					$('#tel, #modal-tel').on('input', function() {
+					    var $text = $(this);
+					    // 현재 입력된 값 가져오기
+					    var value = $text.val().replace(/[^0-9]/g, ''); // 숫자만 남기기
+
+					    // 자동 하이픈 추가
+					    if (value.length > 3) {
+					        value = value.slice(0, 3) + '-' + value.slice(3);
+					    }
+					    if (value.length > 8) {
+					        value = value.slice(0, 8) + '-' + value.slice(8);
+					    }
+
+					    // 최대 길이 제한 및 값 설정
+					    if (value.length > 13) {
+					        value = value.slice(0, 13);
+					    }
+					    
+					    $text.val(value); // 필드에 새로운 값 설정
+					});
+
+									
+						// 취소, x 마크 클릭 시 내용 초기화
+						$(".btn-secondary").click(resetForm);
+						$(".btn-close").click(resetForm);
+										
+});
+
+
+		// 내용 초기화
+		function resetForm() {
+			$("form").each(function() {
+				this.reset();
+			});
+			$('#join_img, detail_img').attr('src', '/images/original.png');
+			
+			// 오류 메시지 초기화
+		    $('#idError').text('');
+		    $('#passwordError').text('');
+		    $('#nameError').text('');
+		    $('#pwConfirm').text('');
+		    
+		    // 중복환인 초기화
+		    isIdChecked = false;
+		}
+		
+				// 사진 업로드
+				function imgUpload(uploadBtn) {
+					const prefix = uploadBtn.id.split("_")[0];
+					const profileId = "#" + prefix + "_profile";
+					const fileInput = $(profileId);
+					const imgId = "#" + prefix + "_img";
+					fileInput.click();
+					
+					// 파일 선택 시 이벤트
+					fileInput.change(function(e) {
+						handleImgFileSelect(e, imgId);
+					});
+		
+				}
+		
+				// 사진 제거 : 기본 프로필로 전환
+				function imgRemove(removeBtn) {
+					const prefix = removeBtn.id.split("_")[0];
+					const profileId = "#" + prefix + "_profile";
+					const fileInput = $(profileId);
+					const imgId = "#" + prefix + "_img";
+					
+					$(imgId).attr('src', '/images/original.png');
+					$("#profile-value").val(''); // 프로필 제거된 상태로 초기값 설정
+					fileInput.val('');
+				}
+				
+				function handleImgFileSelect(e, imgId) {
+					var files = e.target.files;
+					var reader = new FileReader();
+					reader.onload = function(e) {
+						$(imgId).attr('src', e.target.result);
+					}
+					reader.readAsDataURL(files[0]);
+				}						
+				
+</script>
+	
+	<!-- 카카오 다음 api 우편번호 -->
+	<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+	<script>
+		function sample6_execDaumPostcode() {
+			new daum.Postcode(
+					{
+						oncomplete : function(data) {
+							var addr = ''; // 주소 변수
+							var extraAddr = ''; // 참고항목 변수
+
+							if (data.userSelectedType === 'R') {
+								addr = data.roadAddress;
+							} else {
+								addr = data.jibunAddress;
+							}
+
+							if (data.userSelectedType === 'R') {
+								if (data.bname !== ''
+										&& /[동|로|가]$/g.test(data.bname)) {
+									extraAddr += data.bname;
+								}
+								if (data.buildingName !== ''
+										&& data.apartment === 'Y') {
+									extraAddr += (extraAddr !== '' ? ', '
+											+ data.buildingName
+											: data.buildingName);
+								}
+								if (extraAddr !== '') {
+									extraAddr = ' (' + extraAddr + ')';
+								}
+							}
+							document.getElementById("sample6_postcode").value = data.zonecode;
+							document.getElementById("sample6_address").value = addr;
+							document.getElementById("sample6_detailAddress")
+									.focus();
+
+							if (document
+									.getElementById('modal-sample6_postcode')) {
+								document
+										.getElementById('modal-sample6_postcode').value = data.zonecode;
+								document
+										.getElementById("modal-sample6_address").value = addr;
+								document.getElementById(
+										"modal-sample6_detailAddress").focus();
+							}
+						}
+					}).open();
+		}
+	</script>
+</th:block>

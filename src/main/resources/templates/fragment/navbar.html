@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="navbar">
+    <nav class="navbar navbar-expand-lg custom-bg">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold " href="/members/list">쇼핑몰 회원관리</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav me-auto">
+                </ul>
+
+                <ul class="navbar-nav">
+                    <li th:if="${loggedMember.id == null}" class="nav-item">
+                        <a class="nav-link" href="/login">로그인</a>
+                    </li>
+
+                    <li th:if="${loggedMember.id != null}" class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false"> 
+                            <span th:text="${loggedMember.name}"></span> 
+                            <img th:src="@{${loggedMember.profile}}" alt="프로필 이미지" style="width: 30px; height: 30px; border-radius: 50%;">
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <li>
+                                <div class="dropdown-item" id="logged-profile">프로필 보기</div>
+                            </li>
+                            <li>
+                                <div class="dropdown-item" id="logged-info" th:data-member-id="${loggedMember.id}">정보 수정</div>
+                            </li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" style="display: inline;">
+                                    <button type="submit" class="dropdown-item">로그아웃</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <script>
+        $('#logged-info').click(function(e) {
+            e.stopPropagation(); // 이벤트 전파 방지
+            loadMemberInfo($(this).data('member-id')); 
+            console.log("모달이 열렸습니다.", $(this).data('member-id'));
+        });
+
+        function loadMemberInfo(id) {
+            console.log("loadMemberInfo 호출됨. id: " + id);
+            $.ajax({
+                type: "GET",
+                url: "/members/" + id,
+                success: function(data) {
+                    const formattedTel = data.tel.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+                    $('#detail_img').attr('src', data.profile);
+                    $("#modal-id").val(data.id);
+                    $("#modal-name").val(data.name);
+                    $("#modal-tel").val(formattedTel);
+                    $("#modal-sample6_postcode").val(data.postcode);
+                    $("#modal-sample6_address").val(data.address);
+                    $("#modal-sample6_detailAddress").val(data.detailAddress);
+                    $("#modal-authority").val(data.authority);
+                    $("#profile-value").val(data.profile);
+
+                 // ID 값을 가져와서 <p> 태그에 설정
+                    var idValue = $("#modal-id").val();
+                    $("#idValueP").text(idValue); // <p> 태그에 ID 값 설정
+                    
+                    if (loggedMember.authority === '중간 관리자' && loggedMember.id !== data.id) {
+                        $("input").prop('readonly', true);
+                        $("input[type='button'][onclick='sample6_execDaumPostcode()']").prop('disabled', true);
+                        $(".profile-buttons, #btn_update, #btn_delete").hide();
+                        $("#modal-authority").prop('disabled', true);
+                        
+                        $(".profile-container").on('click', function(e) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                        });
+                    } else {
+                        $("input:not(#modal-id)").prop('readonly', false);
+                        $("input[type='button'][onclick='sample6_execDaumPostcode()']").prop('disabled', false);
+                        $("#btn_update, #btn_delete").show();
+                        $(".profile-container").on('click');
+                        $("#modal-authority").prop('disabled', false);
+                    }
+
+                    $("#infoModal").modal('show');
+                    console.log("모달이 열렸습니다.");
+                },
+                error: function() {
+                    alert("회원 정보를 가져오는 데 실패했습니다.");
+                    console.log("AJAX 요청 실패");
+                }
+            });
+        }
+    </script>
+</th:block>
