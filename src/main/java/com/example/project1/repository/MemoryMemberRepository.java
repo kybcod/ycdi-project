@@ -3,7 +3,6 @@ package com.example.project1.repository;
 import com.example.project1.domain.Member;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryMemberRepository implements MemberRepository {
 
@@ -34,6 +33,7 @@ public class MemoryMemberRepository implements MemberRepository {
         return new ArrayList<>(store.values());
     }
 
+    @Override
     public void clearStore() {
         store.clear();
     }
