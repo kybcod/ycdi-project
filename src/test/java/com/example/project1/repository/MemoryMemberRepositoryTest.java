@@ -1,6 +1,6 @@
 package com.example.project1.repository;
 
-import com.example.project1.domain.Member;
+import com.example.project1.domain.OldMember;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,41 +20,41 @@ class MemoryMemberRepositoryTest {
 
     @Test
     public void save() {
-        Member member = new Member();
+        OldMember member = new OldMember();
         member.setName("spring");
 
         repository.save(member);
 
-        Member result = repository.findById(member.getId()).get();
+        OldMember result = repository.findById(member.getId()).get();
         assertThat(member).isEqualTo(result);
     }
 
     @Test
     public void findByName() {
-        Member member1 = new Member();
+        OldMember member1 = new OldMember();
         member1.setName("spring1");
         repository.save(member1);
 
-        Member member2 = new Member();
+        OldMember member2 = new OldMember();
         member2.setName("spring2");
         repository.save(member2);
 
-        Member result = repository.findByName("spring1").get();
+        OldMember result = repository.findByName("spring1").get();
 
         assertThat(result).isEqualTo(member1);
     }
 
     @Test
     public void findAll() {
-        Member member1 = new Member();
+        OldMember member1 = new OldMember();
         member1.setName("spring1");
         repository.save(member1);
 
-        Member member2 = new Member();
+        OldMember member2 = new OldMember();
         member2.setName("spring2");
         repository.save(member2);
 
-        List<Member> result = repository.findAll();
+        List<OldMember> result = repository.findAll();
 
         assertThat(result.size()).isEqualTo(2);
     }

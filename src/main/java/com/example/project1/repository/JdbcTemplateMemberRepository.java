@@ -1,7 +1,6 @@
 package com.example.project1.repository;
 
-import com.example.project1.domain.Member;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.project1.domain.OldMember;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -15,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class JdbcTemplateMemberRepository implements MemberRepository {
+public class JdbcTemplateMemberRepository implements OldMemberRepository {
 
     private JdbcTemplate jdbcTemplate;
 
@@ -25,7 +24,7 @@ public class JdbcTemplateMemberRepository implements MemberRepository {
     }
 
     @Override
-    public Member save(Member member) {
+    public OldMember save(OldMember member) {
         SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
         jdbcInsert.withTableName("member").usingGeneratedKeyColumns("id");
 
@@ -38,25 +37,25 @@ public class JdbcTemplateMemberRepository implements MemberRepository {
     }
 
     @Override
-    public Optional<Member> findById(Long id) {
-        List<Member> result = jdbcTemplate.query("select * from member where id = ?", memberRowMapper(), id);
+    public Optional<OldMember> findById(Long id) {
+        List<OldMember> result = jdbcTemplate.query("select * from member where id = ?", memberRowMapper(), id);
         return result.stream().findAny();
     }
 
     @Override
-    public Optional<Member> findByName(String name) {
-        List<Member> result = jdbcTemplate.query("select * from member where name = ?", memberRowMapper(), name);
+    public Optional<OldMember> findByName(String name) {
+        List<OldMember> result = jdbcTemplate.query("select * from member where name = ?", memberRowMapper(), name);
         return result.stream().findAny();
     }
 
     @Override
-    public List<Member> findAll() {
+    public List<OldMember> findAll() {
         return jdbcTemplate.query("select * from member", memberRowMapper());
     }
 
-    private RowMapper<Member> memberRowMapper(){
+    private RowMapper<OldMember> memberRowMapper(){
         return (rs, rowNum) -> {
-            Member member = new Member();
+            OldMember member = new OldMember();
             member.setId(rs.getLong("id"));
             member.setName(rs.getString("name"));
             return member;

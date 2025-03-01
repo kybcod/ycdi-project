@@ -1,8 +1,8 @@
 package com.example.project1.service;
 
-import com.example.project1.domain.Member;
-import com.example.project1.repository.MemberRepository;
+import com.example.project1.domain.OldMember;
 import com.example.project1.repository.MemoryMemberRepository;
+import com.example.project1.repository.OldMemberRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,14 +13,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MemberServiceTest {
 
-    MemberService memberService;
-    MemberRepository memberRepository ;
+    OldMemberService memberService;
+    OldMemberRepository memberRepository ;
 
     // 각 테스트 실행하기 전에 실행
     @BeforeEach
     public void beforeEach() {
         memberRepository = new MemoryMemberRepository();
-        memberService = new MemberService(memberRepository);
+        memberService = new OldMemberService(memberRepository);
     }
 
     // 테스트 끝날 때 마다 저장소를 지워주어야 한다.
@@ -33,24 +33,24 @@ class MemberServiceTest {
     @Test
     void 회원가입() {
         // given
-        Member member = new Member();
+        OldMember member = new OldMember();
         member.setName("spring");
 
         // when
         Long saveId = memberService.join(member);
 
         // then
-        Member findMember = memberService.findOne(saveId).get();
+        OldMember findMember = memberService.findOne(saveId).get();
         assertThat(member.getName()).isEqualTo(findMember.getName());
     }
 
     @Test
     public void 중복_회원_에러(){
         //given
-        Member member1 = new Member();
+        OldMember member1 = new OldMember();
         member1.setName("spring");
 
-        Member member2 = new Member();
+        OldMember member2 = new OldMember();
         member2.setName("spring");
 
         //when

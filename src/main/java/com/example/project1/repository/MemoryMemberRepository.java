@@ -1,37 +1,36 @@
 package com.example.project1.repository;
-
-import com.example.project1.domain.Member;
+import com.example.project1.domain.OldMember;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
-public class MemoryMemberRepository implements MemberRepository {
+public class MemoryMemberRepository implements OldMemberRepository {
 
-    private static Map<Long, Member> store = new HashMap<>();
+    private static Map<Long, OldMember> store = new HashMap<>();
     private static long sequence = 0L;
 
     @Override
-    public Member save(Member member) {
+    public OldMember save(OldMember member) {
         member.setId(++sequence);
         store.put(member.getId(), member);
         return member;
     }
 
     @Override
-    public Optional<Member> findById(Long id) {
+    public Optional<OldMember> findById(Long id) {
         return Optional.ofNullable(store.get(id));
     }
 
     @Override
-    public Optional<Member> findByName(String name) {
+    public Optional<OldMember> findByName(String name) {
         return store.values().stream()
                 .filter(member -> member.getName().equals(name))
                 .findAny();
     }
 
     @Override
-    public List<Member> findAll() {
+    public List<OldMember> findAll() {
         return new ArrayList<>(store.values());
     }
 

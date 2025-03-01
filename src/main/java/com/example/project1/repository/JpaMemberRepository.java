@@ -1,12 +1,12 @@
 package com.example.project1.repository;
 
-import com.example.project1.domain.Member;
+import com.example.project1.domain.OldMember;
 import jakarta.persistence.EntityManager;
 
 import java.util.List;
 import java.util.Optional;
 
-public class JpaMemberRepository implements MemberRepository {
+public class JpaMemberRepository implements OldMemberRepository {
 
     private final EntityManager em;
 
@@ -15,29 +15,29 @@ public class JpaMemberRepository implements MemberRepository {
     }
 
     @Override
-    public Member save(Member member) {
+    public OldMember save(OldMember member) {
         em.persist(member);
         return member;
     }
 
     @Override
-    public Optional<Member> findById(Long id) {
-        Member member = em.find(Member.class, id);
+    public Optional<OldMember> findById(Long id) {
+        OldMember member = em.find(OldMember.class, id);
         return Optional.ofNullable(member);
     }
 
     @Override
-    public Optional<Member> findByName(String name) {
-        List<Member> result = em.createQuery("select m from Member m where m.name = :name", Member.class)
+    public Optional<OldMember> findByName(String name) {
+        List<OldMember> result = em.createQuery("select m from Member m where m.name = :name", OldMember.class)
                 .setParameter("name", name)
                 .getResultList();
         return result.stream().findAny();
     }
 
     @Override
-    public List<Member> findAll() {
+    public List<OldMember> findAll() {
         // 객체 차제를 select
-        return em.createQuery("select m from Member m", Member.class)
+        return em.createQuery("select m from Member m", OldMember.class)
                 .getResultList();
     }
 

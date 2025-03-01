@@ -1,7 +1,7 @@
 package com.example.project1.service;
 
-import com.example.project1.domain.Member;
-import com.example.project1.repository.MemberRepository;
+import com.example.project1.domain.OldMember;
+import com.example.project1.repository.OldMemberRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,30 +14,30 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Transactional
 class MemberServiceIntegrationTest {
 
-    @Autowired MemberService memberService;
-    @Autowired MemberRepository memberRepository ;
+    @Autowired OldMemberService memberService;
+    @Autowired OldMemberRepository memberRepository ;
 
     @Test
     void 회원가입() {
         // given
-        Member member = new Member();
+        OldMember member = new OldMember();
         member.setName("spring");
 
         // when
         Long saveId = memberService.join(member);
 
         // then
-        Member findMember = memberService.findOne(saveId).get();
+        OldMember findMember = memberService.findOne(saveId).get();
         assertThat(member.getName()).isEqualTo(findMember.getName());
     }
 
     @Test
     public void 중복_회원_에러(){
         //given
-        Member member1 = new Member();
+        OldMember member1 = new OldMember();
         member1.setName("spring");
 
-        Member member2 = new Member();
+        OldMember member2 = new OldMember();
         member2.setName("spring");
 
         //when

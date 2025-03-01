@@ -3,7 +3,7 @@ package com.example.project1.domain;
 import jakarta.persistence.*;
 
 @Entity
-public class Member {
+public class OldMember {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) //DB가 자동 생성
     private Long id;

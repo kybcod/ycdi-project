@@ -2,7 +2,7 @@ package com.example.project1;
 
 import aop.TimeTraceAop;
 import com.example.project1.repository.*;
-import com.example.project1.service.MemberService;
+import com.example.project1.service.OldMemberService;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -25,15 +25,15 @@ public class SpringConfig {
     }*/
 
     //Spring JPA
-    private final MemberRepository memberRepository;
+    private final OldMemberRepository memberRepository;
 
-    public SpringConfig(MemberRepository memberRepository) {
+    public SpringConfig(OldMemberRepository memberRepository) {
         this.memberRepository = memberRepository;
     }
 
     @Bean
-    public MemberService memberService() {
-        return new MemberService(memberRepository);
+    public OldMemberService memberService() {
+        return new OldMemberService(memberRepository);
     }
 
     @Bean

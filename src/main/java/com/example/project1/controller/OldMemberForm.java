@@ -1,6 +1,6 @@
 package com.example.project1.controller;
 
-public class MemberForm {
+public class OldMemberForm {
     private String name;
 
     public String getName() {

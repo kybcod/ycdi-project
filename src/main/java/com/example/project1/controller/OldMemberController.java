@@ -1,18 +1,17 @@
 package com.example.project1.controller;
 
-import com.example.project1.domain.Member;
-import com.example.project1.service.MemberService;
+import com.example.project1.domain.OldMember;
+import com.example.project1.service.OldMemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
-public class MemberController {
+public class OldMemberController {
 
  /*   // 필드 주입
     @Autowired private MemberService memberService;
@@ -24,23 +23,23 @@ public class MemberController {
     }*/
 
     // 생성자 주입
-    private MemberService memberService;
+    private OldMemberService memberService;
 
     @Autowired
-    public MemberController(MemberService memberService) {
+    public OldMemberController(OldMemberService memberService) {
         this.memberService = memberService;
         System.out.println("memberService = " + memberService.getClass()); //프록시 : CGLIB
     }
 
-    @GetMapping("/members/new")
+    @GetMapping("/oldmembers/new")
     public String createForm() {
         return "members/createMemberForm"; // createMemberForm.html
     }
 
-    @PostMapping("/members/new")
-    public String create(MemberForm memberForm) {
-        Member member = new Member();
-        member.setName(memberForm.getName());
+    @PostMapping("/oldmembers/new")
+    public String create(OldMemberForm oldMemberForm) {
+        OldMember member = new OldMember();
+        member.setName(oldMemberForm.getName());
 
         System.out.println("member = " + member.getName());
 
@@ -48,10 +47,10 @@ public class MemberController {
         return "redirect:/";
     }
 
-    @GetMapping("/members")
+    @GetMapping("/oldmembers")
     public String list(Model model) {
-        List<Member> members = memberService.findMembers();
+        List<OldMember> members = memberService.findMembers();
         model.addAttribute("members", members);
-        return "members/memberList";
+        return "oldmembers/memberList";
     }
 }

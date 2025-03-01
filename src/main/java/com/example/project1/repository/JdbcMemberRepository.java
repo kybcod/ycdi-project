@@ -1,6 +1,6 @@
 package com.example.project1.repository;
 
-import com.example.project1.domain.Member;
+import com.example.project1.domain.OldMember;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import javax.sql.DataSource;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class JdbcMemberRepository implements MemberRepository {
+public class JdbcMemberRepository implements OldMemberRepository {
 
 
     private final DataSource dataSource;
@@ -19,7 +19,7 @@ public class JdbcMemberRepository implements MemberRepository {
     }
 
     @Override
-    public Member save(Member member) {
+    public OldMember save(OldMember member) {
         String sql = "insert into member(name) values(?)";
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -49,7 +49,7 @@ public class JdbcMemberRepository implements MemberRepository {
     }
 
     @Override
-    public Optional<Member> findById(Long id) {
+    public Optional<OldMember> findById(Long id) {
         String sql = "select * from member where id = ?";
 
         Connection conn = null;
@@ -64,7 +64,7 @@ public class JdbcMemberRepository implements MemberRepository {
             rs = pstmt.executeQuery();
 
             if(rs.next()) {
-                Member member = new Member();
+                OldMember member = new OldMember();
                 member.setId(rs.getLong("id"));
                 member.setName(rs.getString("name"));
                 return Optional.of(member);
@@ -79,7 +79,7 @@ public class JdbcMemberRepository implements MemberRepository {
     }
 
     @Override
-    public List<Member> findAll() {
+    public List<OldMember> findAll() {
         String sql = "select * from member";
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -89,10 +89,10 @@ public class JdbcMemberRepository implements MemberRepository {
             conn = getConnection();
             pstmt = conn.prepareStatement(sql);
             rs = pstmt.executeQuery();
-            List<Member> members = new ArrayList<>();
+            List<OldMember> members = new ArrayList<>();
 
             while(rs.next()) {
-                Member member = new Member();
+                OldMember member = new OldMember();
                 member.setId(rs.getLong("id"));
                 member.setName(rs.getString("name"));
                 members.add(member);
@@ -108,7 +108,7 @@ public class JdbcMemberRepository implements MemberRepository {
     }
 
     @Override
-    public Optional<Member> findByName(String name) {
+    public Optional<OldMember> findByName(String name) {
         String sql = "select * from member where name = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -120,7 +120,7 @@ public class JdbcMemberRepository implements MemberRepository {
             pstmt.setString(1, name);
             rs = pstmt.executeQuery();
             if(rs.next()) {
-                Member member = new Member();
+                OldMember member = new OldMember();
                 member.setId(rs.getLong("id"));
                 member.setName(rs.getString("name"));
                 return Optional.of(member);
