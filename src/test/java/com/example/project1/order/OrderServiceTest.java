@@ -1,9 +1,11 @@
 package com.example.project1.order;
 
+import com.example.project1.AppConfig;
 import com.example.project1.member.Grade;
 import com.example.project1.member.Member;
 import com.example.project1.member.MemberService;
 import com.example.project1.member.MemberServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -11,8 +13,16 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class OrderServiceTest {
-    MemberService memberService = new MemberServiceImpl();
-    OrderService orderService = new OrderServiceImpl();
+    MemberService memberService;
+    OrderService orderService;
+
+    @BeforeEach
+    public void beforeEach() {
+        AppConfig appConfig = new AppConfig();
+        memberService = appConfig.memberService();
+        orderService = appConfig.orderService();
+    }
+
 
     @Test
     void createOrder() {
