@@ -8,9 +8,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class MemoryMemberRepositoryTest {
+class OldMemoryMemberRepositoryTest {
 
-    MemoryMemberRepository repository = new MemoryMemberRepository();
+    OldMemoryMemberRepository repository = new OldMemoryMemberRepository();
 
     // 테스트 끝날 때 마다 저장소를 지워주어야 한다.
     @AfterEach

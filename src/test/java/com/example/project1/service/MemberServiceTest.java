@@ -1,10 +1,9 @@
 package com.example.project1.service;
 
 import com.example.project1.domain.OldMember;
-import com.example.project1.repository.MemoryMemberRepository;
+import com.example.project1.repository.OldMemoryMemberRepository;
 import com.example.project1.repository.OldMemberRepository;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +18,7 @@ class MemberServiceTest {
     // 각 테스트 실행하기 전에 실행
     @BeforeEach
     public void beforeEach() {
-        memberRepository = new MemoryMemberRepository();
+        memberRepository = new OldMemoryMemberRepository();
         memberService = new OldMemberService(memberRepository);
     }
 

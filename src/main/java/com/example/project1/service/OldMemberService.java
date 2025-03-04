@@ -1,6 +1,5 @@
 package com.example.project1.service;
 import com.example.project1.domain.OldMember;
-import com.example.project1.repository.MemoryMemberRepository;
 import com.example.project1.repository.OldMemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

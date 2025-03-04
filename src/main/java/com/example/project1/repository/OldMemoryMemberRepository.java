@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 
 @Repository
-public class MemoryMemberRepository implements OldMemberRepository {
+public class OldMemoryMemberRepository implements OldMemberRepository {
 
     private static Map<Long, OldMember> store = new HashMap<>();
     private static long sequence = 0L;
