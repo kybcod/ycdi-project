@@ -2,6 +2,7 @@ package com.example.project1;
 
 import com.example.project1.discount.DiscountPolicy;
 import com.example.project1.discount.FixDiscountPolicy;
+import com.example.project1.discount.RateDiscountPolicy;
 import com.example.project1.member.MemberRepository;
 import com.example.project1.member.MemberService;
 import com.example.project1.member.MemberServiceImpl;
@@ -17,7 +18,6 @@ public class AppConfig {
         return new MemberServiceImpl(memberRepository());
     }
 
-
     public OrderService orderService(){
         return new OrderServiceImpl(memberRepository(), discountPolicy());
     }
@@ -27,7 +27,8 @@ public class AppConfig {
     }
 
     public DiscountPolicy discountPolicy(){
-        return new FixDiscountPolicy();
+//        return new FixDiscountPolicy();
+        return new RateDiscountPolicy();
     }
 
 }
