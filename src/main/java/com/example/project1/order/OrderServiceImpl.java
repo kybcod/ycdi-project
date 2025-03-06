@@ -1,29 +1,23 @@
 package com.example.project1.order;
 
+import com.example.project1.annotation.MainDiscountPolicy;
 import com.example.project1.discount.DiscountPolicy;
 import com.example.project1.discount.FixDiscountPolicy;
 import com.example.project1.discount.RateDiscountPolicy;
 import com.example.project1.member.Member;
 import com.example.project1.member.MemberRepository;
-import com.example.project1.member.MemoryMemberRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
     private final MemberRepository memberRepository;
     private final DiscountPolicy discountPolicy;
 
-
-    /*
-    @RequiredArgsConstructor 으로 인해 생략
-    public OrderServiceImpl(MemberRepository memberRepository, DiscountPolicy discountPolicy) {
+    public OrderServiceImpl(MemberRepository memberRepository, @MainDiscountPolicy DiscountPolicy discountPolicy) {
         this.memberRepository = memberRepository;
         this.discountPolicy = discountPolicy;
-    }*/
+    }
 
     @Override
     public Order createOrder(Long memberId, String itemName, int itemPrice) {
