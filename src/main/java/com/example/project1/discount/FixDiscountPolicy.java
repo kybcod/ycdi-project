@@ -5,7 +5,7 @@ import com.example.project1.member.Member;
 
 public class FixDiscountPolicy implements DiscountPolicy {
 
-    private int discountFixAmount = 1000;
+    private int discountFixAmount = 10000;
 
     @Override
     public int discount(Member member, int price) {
