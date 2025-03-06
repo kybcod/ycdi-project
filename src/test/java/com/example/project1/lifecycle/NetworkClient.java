@@ -1,5 +1,7 @@
 package com.example.project1.lifecycle;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -27,11 +29,13 @@ public class NetworkClient {
 
     public void disconnect() {}
 
+    @PostConstruct
     public void init(){
         connect();
         call("초기화 연결 메시지");
     }
 
+    @PreDestroy
     public void close() {
         disconnect();
     }
